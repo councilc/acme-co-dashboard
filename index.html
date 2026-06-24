@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acme Co — Tracking Audit Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0F2D40; --teal: #0891B2; --purple: #7C3AED;
+    --green: #059669; --amber: #D97706; --red: #EF4444;
+    --bg: #F1F5F9; --card: #FFFFFF; --text: #1E293B; --muted: #64748B;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Header */
+  .header { background: var(--navy); color: #fff; padding: 16px 32px;
+             display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 18px; font-weight: 600; letter-spacing: -.3px; }
+  .header .sub { font-size: 12px; opacity: .6; margin-top: 2px; }
+  .badge { background: var(--teal); color: #fff; font-size: 11px;
+            padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+
+  /* Tabs */
+  .tabs { background: #fff; border-bottom: 1px solid #E2E8F0;
+           display: flex; padding: 0 32px; }
+  .tab { padding: 14px 20px; font-size: 13px; font-weight: 500; cursor: pointer;
+          border-bottom: 3px solid transparent; color: var(--muted);
+          transition: all .15s; }
+  .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* Pages */
+  .page { display: none; padding: 28px 32px; }
+  .page.active { display: block; }
+
+  /* Scorecards */
+  .scorecards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                 gap: 16px; margin-bottom: 24px; }
+  .scorecard { background: var(--card); border-radius: 10px; padding: 20px;
+                box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+  .scorecard .label { font-size: 11px; font-weight: 600; text-transform: uppercase;
+                       letter-spacing: .5px; color: var(--muted); margin-bottom: 8px; }
+  .scorecard .value { font-size: 28px; font-weight: 700; color: var(--navy);
+                       line-height: 1; }
+  .scorecard .sub  { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .scorecard.teal  .value { color: var(--teal); }
+  .scorecard.green .value { color: var(--green); }
+  .scorecard.purple .value { color: var(--purple); }
+  .scorecard.amber  .value { color: var(--amber); }
+
+  /* Chart grid */
+  .chart-grid { display: grid; gap: 20px; }
+  .chart-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .chart-grid.cols-3 { grid-template-columns: 2fr 1fr; }
+
+  .chart-card { background: var(--card); border-radius: 10px; padding: 20px;
+                 box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+  .chart-card h3 { font-size: 13px; font-weight: 600; color: var(--muted);
+                    text-transform: uppercase; letter-spacing: .4px; margin-bottom: 16px; }
+  .chart-card canvas { max-height: 280px; }
+  .chart-card.tall canvas { max-height: 360px; }
+
+  /* Table */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #F8FAFC; color: var(--muted); font-weight: 600;
+        text-transform: uppercase; font-size: 11px; letter-spacing: .4px;
+        padding: 10px 14px; border-bottom: 1px solid #E2E8F0; text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid #F1F5F9; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #F8FAFC; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Funnel */
+  .funnel { display: flex; flex-direction: column; gap: 12px; padding: 8px 0; }
+  .funnel-bar { position: relative; }
+  .funnel-label { font-size: 12px; font-weight: 600; color: var(--muted);
+                   margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
+  .funnel-track { background: #E2E8F0; border-radius: 6px; height: 40px; overflow: hidden; }
+  .funnel-fill  { height: 100%; border-radius: 6px; display: flex;
+                   align-items: center; padding: 0 14px;
+                   font-weight: 700; font-size: 14px; color: #fff;
+                   transition: width .6s ease; }
+  .funnel-pct { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  @media (max-width: 768px) {
+    .chart-grid.cols-2, .chart-grid.cols-3 { grid-template-columns: 1fr; }
+    .header { padding: 14px 16px; }
+    .page { padding: 20px 16px; }
+    .tabs { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header h1">Acme Co — Tracking Audit Dashboard</div>
+    <div class="sub">Jan – Jun 2025 &nbsp;·&nbsp; Synthetic data for demo</div>
+  </div>
+  <span class="badge">Platform 2 Preview</span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showPage(0)">📊 Channel Overview</div>
+  <div class="tab"        onclick="showPage(1)">🔽 Funnel View</div>
+  <div class="tab"        onclick="showPage(2)">💰 Revenue by Source</div>
+</div>
+
+<!-- ══════════════════════════ PAGE 1 ══════════════════════════ -->
+<div class="page active" id="page0">
+
+  <div class="scorecards">
+    <div class="scorecard teal">
+      <div class="label">Total Spend</div>
+      <div class="value">SGD 1,805,816</div>
+      <div class="sub">All platforms</div>
+    </div>
+    <div class="scorecard">
+      <div class="label">Impressions</div>
+      <div class="value">46,060,744</div>
+    </div>
+    <div class="scorecard purple">
+      <div class="label">Conversions</div>
+      <div class="value">28,994</div>
+    </div>
+    <div class="scorecard green">
+      <div class="label">ROAS</div>
+      <div class="value">3.03×</div>
+      <div class="sub">Blended</div>
+    </div>
+    <div class="scorecard amber">
+      <div class="label">Conv. Value</div>
+      <div class="value">SGD 5,468,742</div>
+    </div>
+    <div class="scorecard">
+      <div class="label">CTR</div>
+      <div class="value">2.18%</div>
+    </div>
+  </div>
+
+  <div class="chart-grid cols-2" style="margin-bottom:20px">
+    <div class="chart-card">
+      <h3>Spend by Platform</h3>
+      <canvas id="p1SpendByPlatform"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>ROAS by Platform</h3>
+      <canvas id="p1RoasByPlatform"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-grid" style="margin-bottom:20px">
+    <div class="chart-card tall">
+      <h3>Monthly Spend by Platform</h3>
+      <canvas id="p1MonthlySpend"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Performance by Platform</h3>
+    <div class="tbl-wrap">
+      <table id="p1Table"></table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ PAGE 2 ══════════════════════════ -->
+<div class="page" id="page1">
+
+  <div class="scorecards">
+    <div class="scorecard teal">
+      <div class="label">Sessions</div>
+      <div class="value">825,702</div>
+    </div>
+    <div class="scorecard purple">
+      <div class="label">Engaged Sessions</div>
+      <div class="value">550,617</div>
+      <div class="sub">Engagement rate: 66.7%</div>
+    </div>
+    <div class="scorecard amber">
+      <div class="label">Conversions</div>
+      <div class="value">22,112</div>
+      <div class="sub">Conv. rate: 2.68%</div>
+    </div>
+    <div class="scorecard green">
+      <div class="label">Revenue</div>
+      <div class="value">SGD 2,444,049</div>
+    </div>
+  </div>
+
+  <div class="chart-grid cols-2" style="margin-bottom:20px">
+    <div class="chart-card">
+      <h3>Acquisition Funnel</h3>
+      <div class="funnel" id="p2Funnel"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Sessions by Channel</h3>
+      <canvas id="p2SessionsByChannel"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-grid" style="margin-bottom:20px">
+    <div class="chart-card tall">
+      <h3>Monthly Sessions vs Conversions</h3>
+      <canvas id="p2MonthlyTrend"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Channel Breakdown</h3>
+    <div class="tbl-wrap">
+      <table id="p2Table"></table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ PAGE 3 ══════════════════════════ -->
+<div class="page" id="page2">
+
+  <div class="scorecards">
+    <div class="scorecard green">
+      <div class="label">Net Revenue</div>
+      <div class="value">SGD 106,274</div>
+      <div class="sub">Completed orders</div>
+    </div>
+    <div class="scorecard teal">
+      <div class="label">Gross Revenue</div>
+      <div class="value">SGD 121,297</div>
+    </div>
+    <div class="scorecard purple">
+      <div class="label">Orders</div>
+      <div class="value">2,237</div>
+    </div>
+    <div class="scorecard amber">
+      <div class="label">Avg Order Value</div>
+      <div class="value">SGD 47.51</div>
+    </div>
+  </div>
+
+  <div class="chart-grid cols-2" style="margin-bottom:20px">
+    <div class="chart-card">
+      <h3>Net Revenue by Platform</h3>
+      <canvas id="p3RevByPlatform"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Top Products by Revenue</h3>
+      <canvas id="p3RevByProduct"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-grid" style="margin-bottom:20px">
+    <div class="chart-card tall">
+      <h3>Monthly Revenue by Platform</h3>
+      <canvas id="p3MonthlyRev"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Revenue by Platform</h3>
+    <div class="tbl-wrap">
+      <table id="p3Table"></table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const COLORS = ["#0891B2", "#7C3AED", "#059669", "#D97706", "#EF4444", "#0F2D40", "#06B6D4", "#8B5CF6", "#10B981", "#F59E0B"];
+
+const p1Platform = [{"platform": "Google Ads", "spend": 1188359.16, "impressions": 13692786, "clicks": 641489, "conversions": 22575, "conv_value": 4220391.6, "roas": 3.55}, {"platform": "LinkedIn Ads", "spend": 377232.26, "impressions": 7779255, "clicks": 56915, "conversions": 670, "conv_value": 670689.92, "roas": 1.78}, {"platform": "Meta", "spend": 163210.24, "impressions": 15282989, "clicks": 176401, "conversions": 3784, "conv_value": 439154.17, "roas": 2.69}, {"platform": "TikTok Ads", "spend": 77014.29, "impressions": 9305714, "clicks": 127289, "conversions": 1965, "conv_value": 138505.95, "roas": 1.8}];
+const p1Monthly  = {"labels": ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06"], "datasets": [{"label": "Google Ads", "data": [181806.49, 178212.99, 202186.53, 207155.1, 212011.39, 206986.66]}, {"label": "LinkedIn Ads", "data": [57219.08, 56280.94, 63245.05, 64328.12, 67101.21, 69057.86]}, {"label": "Meta", "data": [25959.18, 23820.27, 26879.11, 28404.87, 29689.01, 28457.8]}, {"label": "TikTok Ads", "data": [12103.13, 11690.3, 13185.4, 13092.81, 13800.35, 13142.3]}]};
+
+const p2Funnel   = [{"stage": "Sessions", "value": 825702}, {"stage": "Engaged Sessions", "value": 550617}, {"stage": "Conversions", "value": 22112}];
+const p2Channel  = [{"channel_group": "Paid Search", "sessions": 247100, "engaged": 165795, "conversions": 8430, "revenue": 924765.28}, {"channel_group": "Organic Search", "sessions": 183445, "engaged": 122244, "conversions": 3590, "revenue": 407756.7}, {"channel_group": "Paid Social", "sessions": 148033, "engaged": 97791, "conversions": 2844, "revenue": 317095.9}, {"channel_group": "Direct", "sessions": 98549, "engaged": 65859, "conversions": 2845, "revenue": 316896.9}, {"channel_group": "Organic Social", "sessions": 82481, "engaged": 55221, "conversions": 1599, "revenue": 173159.2}, {"channel_group": "Email", "sessions": 41445, "engaged": 27376, "conversions": 2387, "revenue": 257839.39}, {"channel_group": "Referral", "sessions": 24649, "engaged": 16331, "conversions": 417, "revenue": 46535.94}];
+const p2Monthly  = [{"month": "2025-01", "sessions": 132581, "conversions": 3560, "revenue": 380961.08}, {"month": "2025-02", "sessions": 119213, "conversions": 3164, "revenue": 352656.38}, {"month": "2025-03", "sessions": 137509, "conversions": 3628, "revenue": 388755.24}, {"month": "2025-04", "sessions": 142645, "conversions": 3806, "revenue": 439680.35}, {"month": "2025-05", "sessions": 147959, "conversions": 4013, "revenue": 444889.98}, {"month": "2025-06", "sessions": 145795, "conversions": 3941, "revenue": 437106.28}];
+
+const p3Platform = [{"platform": "TikTok Shop", "net_revenue": 53329.07, "orders": 1108}, {"platform": "Shopee", "net_revenue": 52945.11, "orders": 1129}];
+const p3Product  = [{"product_name": "Gift Set Bundle", "net_revenue": 43623.36, "orders": 469}, {"product_name": "Vitamin C Cream", "net_revenue": 20846.42, "orders": 442}, {"product_name": "Hydrating Serum 30ml", "net_revenue": 16210.6, "orders": 402}, {"product_name": "SPF50 Sunscreen", "net_revenue": 14157.22, "orders": 469}, {"product_name": "Cleanser 150ml", "net_revenue": 11436.58, "orders": 455}];
+const p3Monthly  = {"labels": ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06"], "datasets": [{"label": "Shopee", "data": [9533.11, 6518.09, 8731.51, 11482.95, 8808.7, 7870.75]}, {"label": "TikTok Shop", "data": [8318.93, 7381.71, 10091.07, 10037.99, 8853.83, 8645.54]}]};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmt(n, prefix="", suffix="", decimals=0) {
+  if (n === null || n === undefined) return "—";
+  return prefix + Number(n).toLocaleString("en-SG", {minimumFractionDigits: decimals, maximumFractionDigits: decimals}) + suffix;
+}
+
+function barChart(id, labels, data, labelStr, color) {
+  new Chart(document.getElementById(id), {
+    type: "bar",
+    data: { labels, datasets: [{ label: labelStr, data, backgroundColor: color || COLORS[0],
+              borderRadius: 5, borderSkipped: false }] },
+    options: { responsive: true, plugins: { legend: { display: false } },
+                scales: { y: { grid: { color: "#F1F5F9" } }, x: { grid: { display: false } } } }
+  });
+}
+
+function multiLineChart(id, monthlyData, yLabel) {
+  const palette = ["#0891B2","#7C3AED","#059669","#D97706","#EF4444","#0F2D40"];
+  new Chart(document.getElementById(id), {
+    type: "line",
+    data: {
+      labels: monthlyData.labels,
+      datasets: monthlyData.datasets.map((ds, i) => ({
+        ...ds,
+        borderColor: palette[i % palette.length],
+        backgroundColor: palette[i % palette.length] + "22",
+        borderWidth: 2.5,
+        pointRadius: 3,
+        fill: false,
+        tension: 0.3
+      }))
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: "index", intersect: false },
+      plugins: { legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } } },
+      scales: { y: { grid: { color: "#F1F5F9" } }, x: { grid: { display: false } } }
+    }
+  });
+}
+
+function buildTable(id, headers, rows) {
+  const t = document.getElementById(id);
+  const thead = "<thead><tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr></thead>";
+  const tbody = "<tbody>" + rows.map(r => "<tr>" + r.map((c, i) =>
+    `<td class="${typeof c === "number" ? "num" : ""}">${c}</td>`
+  ).join("") + "</tr>").join("") + "</tbody>";
+  t.innerHTML = thead + tbody;
+}
+
+// ── Page navigation ───────────────────────────────────────────────────────────
+function showPage(n) {
+  document.querySelectorAll(".page").forEach((p, i) => p.classList.toggle("active", i === n));
+  document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", i === n));
+}
+
+// ── Page 1 charts ─────────────────────────────────────────────────────────────
+barChart("p1SpendByPlatform",
+  p1Platform.map(r => r.platform),
+  p1Platform.map(r => r.spend),
+  "Spend (SGD)", "#0891B2");
+
+barChart("p1RoasByPlatform",
+  p1Platform.map(r => r.platform),
+  p1Platform.map(r => r.roas),
+  "ROAS", "#7C3AED");
+
+multiLineChart("p1MonthlySpend", p1Monthly, "Spend (SGD)");
+
+buildTable("p1Table",
+  ["Platform","Spend (SGD)","Impressions","Clicks","CTR","Conversions","Conv. Value","ROAS"],
+  p1Platform.map(r => [
+    r.platform,
+    fmt(r.spend, "SGD "),
+    fmt(r.impressions),
+    fmt(r.clicks),
+    fmt(r.clicks / r.impressions * 100, "", "%", 2),
+    fmt(r.conversions),
+    fmt(r.conv_value, "SGD "),
+    fmt(r.roas, "", "×", 2)
+  ])
+);
+
+// ── Page 2 charts ─────────────────────────────────────────────────────────────
+const funnelEl = document.getElementById("p2Funnel");
+const funnelMax = p2Funnel[0].value;
+const funnelColors = ["#0891B2","#7C3AED","#D97706"];
+p2Funnel.forEach((item, i) => {
+  const pct = Math.round(item.value / funnelMax * 100);
+  const prevVal = i === 0 ? item.value : p2Funnel[i-1].value;
+  const dropPct = i === 0 ? 100 : Math.round(item.value / prevVal * 100);
+  funnelEl.innerHTML += `
+    <div class="funnel-bar">
+      <div class="funnel-label">${item.stage}</div>
+      <div class="funnel-track">
+        <div class="funnel-fill" style="width:${pct}%; background:${funnelColors[i]}">
+          ${item.value.toLocaleString("en-SG")}
+        </div>
+      </div>
+      <div class="funnel-pct">${i === 0 ? "100% baseline" : dropPct + "% of prev. stage"}</div>
+    </div>`;
+});
+
+barChart("p2SessionsByChannel",
+  p2Channel.map(r => r.channel_group),
+  p2Channel.map(r => r.sessions),
+  "Sessions", "#0891B2");
+
+const p2MonthlyData = {
+  labels: p2Monthly.map(r => r.month),
+  datasets: [
+    { label: "Sessions",    data: p2Monthly.map(r => r.sessions),    borderColor: "#0891B2", backgroundColor: "#0891B222", borderWidth: 2.5, pointRadius: 3, fill: false, tension: .3 },
+    { label: "Conversions", data: p2Monthly.map(r => r.conversions), borderColor: "#7C3AED", backgroundColor: "#7C3AED22", borderWidth: 2.5, pointRadius: 3, fill: false, tension: .3, yAxisID: "y2" }
+  ]
+};
+new Chart(document.getElementById("p2MonthlyTrend"), {
+  type: "line", data: p2MonthlyData,
+  options: {
+    responsive: true,
+    interaction: { mode: "index", intersect: false },
+    plugins: { legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } } },
+    scales: {
+      y:  { position: "left",  grid: { color: "#F1F5F9" }, title: { display: true, text: "Sessions" } },
+      y2: { position: "right", grid: { display: false },   title: { display: true, text: "Conversions" } },
+      x:  { grid: { display: false } }
+    }
+  }
+});
+
+buildTable("p2Table",
+  ["Channel","Sessions","Engaged","Eng. Rate","Conversions","Conv. Rate","Revenue (SGD)"],
+  p2Channel.map(r => [
+    r.channel_group,
+    fmt(r.sessions),
+    fmt(r.engaged),
+    fmt(r.engaged / r.sessions * 100, "", "%", 1),
+    fmt(r.conversions),
+    fmt(r.conversions / r.sessions * 100, "", "%", 2),
+    fmt(r.revenue, "SGD ")
+  ])
+);
+
+// ── Page 3 charts ─────────────────────────────────────────────────────────────
+barChart("p3RevByPlatform",
+  p3Platform.map(r => r.platform),
+  p3Platform.map(r => r.net_revenue),
+  "Net Revenue (SGD)", "#059669");
+
+new Chart(document.getElementById("p3RevByProduct"), {
+  type: "bar",
+  data: {
+    labels: p3Product.map(r => r.product_name),
+    datasets: [{ label: "Net Revenue (SGD)", data: p3Product.map(r => r.net_revenue),
+      backgroundColor: p3Product.map((_, i) => COLORS[i % COLORS.length]),
+      borderRadius: 5 }]
+  },
+  options: {
+    indexAxis: "y",
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { x: { grid: { color: "#F1F5F9" } }, y: { grid: { display: false } } }
+  }
+});
+
+multiLineChart("p3MonthlyRev", p3Monthly, "Net Revenue (SGD)");
+
+buildTable("p3Table",
+  ["Platform","Net Revenue (SGD)","Orders","Avg Order Value"],
+  p3Platform.map(r => [
+    r.platform,
+    fmt(r.net_revenue, "SGD "),
+    fmt(r.orders),
+    fmt(r.net_revenue / r.orders, "SGD ", "", 2)
+  ])
+);
+</script>
+</body>
+</html>
