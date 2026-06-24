@@ -2,106 +2,91 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acme Co — Tracking Audit Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Acme Co – Tracking Audit Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --navy: #0F2D40; --teal: #0891B2; --purple: #7C3AED;
-    --green: #059669; --amber: #D97706; --red: #EF4444;
-    --bg: #F1F5F9; --card: #FFFFFF; --text: #1E293B; --muted: #64748B;
-  }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-          background: var(--bg); color: var(--text); min-height: 100vh; }
-
-  /* Header */
-  .header { background: var(--navy); color: #fff; padding: 16px 32px;
-             display: flex; align-items: center; justify-content: space-between; }
-  .header h1 { font-size: 18px; font-weight: 600; letter-spacing: -.3px; }
-  .header .sub { font-size: 12px; opacity: .6; margin-top: 2px; }
-  .badge { background: var(--teal); color: #fff; font-size: 11px;
-            padding: 3px 10px; border-radius: 20px; font-weight: 600; }
-
-  /* Tabs */
-  .tabs { background: #fff; border-bottom: 1px solid #E2E8F0;
-           display: flex; padding: 0 32px; }
-  .tab { padding: 14px 20px; font-size: 13px; font-weight: 500; cursor: pointer;
-          border-bottom: 3px solid transparent; color: var(--muted);
-          transition: all .15s; }
-  .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
-  .tab:hover:not(.active) { color: var(--text); }
-
-  /* Pages */
-  .page { display: none; padding: 28px 32px; }
-  .page.active { display: block; }
-
-  /* Scorecards */
-  .scorecards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-                 gap: 16px; margin-bottom: 24px; }
-  .scorecard { background: var(--card); border-radius: 10px; padding: 20px;
-                box-shadow: 0 1px 3px rgba(0,0,0,.07); }
-  .scorecard .label { font-size: 11px; font-weight: 600; text-transform: uppercase;
-                       letter-spacing: .5px; color: var(--muted); margin-bottom: 8px; }
-  .scorecard .value { font-size: 28px; font-weight: 700; color: var(--navy);
-                       line-height: 1; }
-  .scorecard .sub  { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .scorecard.teal  .value { color: var(--teal); }
-  .scorecard.green .value { color: var(--green); }
-  .scorecard.purple .value { color: var(--purple); }
-  .scorecard.amber  .value { color: var(--amber); }
-
-  /* Chart grid */
-  .chart-grid { display: grid; gap: 20px; }
-  .chart-grid.cols-2 { grid-template-columns: 1fr 1fr; }
-  .chart-grid.cols-3 { grid-template-columns: 2fr 1fr; }
-
-  .chart-card { background: var(--card); border-radius: 10px; padding: 20px;
-                 box-shadow: 0 1px 3px rgba(0,0,0,.07); }
-  .chart-card h3 { font-size: 13px; font-weight: 600; color: var(--muted);
-                    text-transform: uppercase; letter-spacing: .4px; margin-bottom: 16px; }
-  .chart-card canvas { max-height: 280px; }
-  .chart-card.tall canvas { max-height: 360px; }
-
-  /* Table */
-  .tbl-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: #F8FAFC; color: var(--muted); font-weight: 600;
-        text-transform: uppercase; font-size: 11px; letter-spacing: .4px;
-        padding: 10px 14px; border-bottom: 1px solid #E2E8F0; text-align: left; }
-  td { padding: 10px 14px; border-bottom: 1px solid #F1F5F9; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #F8FAFC; }
-  td.num { text-align: right; font-variant-numeric: tabular-nums; }
-
-  /* Funnel */
-  .funnel { display: flex; flex-direction: column; gap: 12px; padding: 8px 0; }
-  .funnel-bar { position: relative; }
-  .funnel-label { font-size: 12px; font-weight: 600; color: var(--muted);
-                   margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
-  .funnel-track { background: #E2E8F0; border-radius: 6px; height: 40px; overflow: hidden; }
-  .funnel-fill  { height: 100%; border-radius: 6px; display: flex;
-                   align-items: center; padding: 0 14px;
-                   font-weight: 700; font-size: 14px; color: #fff;
-                   transition: width .6s ease; }
-  .funnel-pct { font-size: 12px; color: var(--muted); margin-top: 3px; }
-
-  @media (max-width: 768px) {
-    .chart-grid.cols-2, .chart-grid.cols-3 { grid-template-columns: 1fr; }
-    .header { padding: 14px 16px; }
-    .page { padding: 20px 16px; }
-    .tabs { padding: 0 16px; }
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0F2D40;--teal:#0891B2;--purple:#7C3AED;--green:#059669;--amber:#D97706;--red:#EF4444;--bg:#F1F5F9;--card:#FFFFFF;--text:#1E293B;--muted:#64748B;--border:#E2E8F0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--navy);color:#fff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header h1{font-size:17px;font-weight:600;letter-spacing:-.3px}
+.header .sub{font-size:11px;opacity:.55;margin-top:2px}
+.badge{background:var(--teal);color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.controls{background:#fff;border-bottom:1px solid var(--border);padding:10px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ctrl-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.ctrl-select{border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;color:var(--text);background:#fff;cursor:pointer;outline:none}
+.ctrl-select:focus{border-color:var(--teal)}
+.date-pill{font-size:12px;color:var(--muted);background:#F8FAFC;padding:5px 10px;border-radius:6px;border:1px solid var(--border);white-space:nowrap}
+.sep{width:1px;height:22px;background:var(--border)}
+.cmp-wrap{display:flex;align-items:center;gap:6px;margin-left:auto}
+.cmp-wrap input[type=checkbox]{accent-color:var(--teal);width:15px;height:15px;cursor:pointer}
+.cmp-wrap span{font-size:13px;cursor:pointer}
+.prior-pill{font-size:11px;color:var(--teal);background:#EFF6FF;padding:3px 8px;border-radius:4px;display:none}
+.prior-pill.on{display:inline}
+.tabs{background:#fff;border-bottom:1px solid var(--border);display:flex;padding:0 28px}
+.tab{padding:13px 18px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:3px solid transparent;color:var(--muted);transition:all .15s}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+.tab:hover:not(.active){color:var(--text)}
+.page{display:none;padding:24px 28px}
+.page.active{display:block}
+.scorecards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;margin-bottom:20px}
+.sc{background:var(--card);border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.sc .lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px}
+.sc .val{font-size:26px;font-weight:700;line-height:1}
+.sc .sub{font-size:11px;color:var(--muted);margin-top:3px}
+.sc .dlt{font-size:11px;margin-top:6px;font-weight:600;display:none;padding:2px 7px;border-radius:4px;width:fit-content}
+.sc .dlt.up{color:#059669;background:#ECFDF5}
+.sc .dlt.dn{color:#EF4444;background:#FEF2F2}
+.sc .dlt.fl{color:var(--muted);background:#F1F5F9}
+.sc.teal .val{color:var(--teal)}.sc.green .val{color:var(--green)}.sc.purple .val{color:var(--purple)}.sc.amber .val{color:var(--amber)}
+.cg{display:grid;gap:18px;margin-bottom:18px}
+.cg.c2{grid-template-columns:1fr 1fr}
+.cc{background:var(--card);border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.cc h3{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px}
+.cc canvas{max-height:270px}.cc.tall canvas{max-height:340px}
+.funnel{display:flex;flex-direction:column;gap:10px;padding:4px 0}
+.fb .lbl{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+.fb .track{background:#E2E8F0;border-radius:6px;height:38px;overflow:hidden}
+.fb .fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 12px;font-weight:700;font-size:13px;color:#fff;transition:width .6s ease}
+.fb .meta{font-size:11px;color:var(--muted);margin-top:2px;display:flex;gap:10px}
+.fb .dd.up{color:var(--green);font-weight:600}.fb .dd.dn{color:var(--red);font-weight:600}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#F8FAFC;color:var(--muted);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.4px;padding:9px 12px;border-bottom:1px solid var(--border);text-align:left}
+td{padding:9px 12px;border-bottom:1px solid #F1F5F9}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#F8FAFC}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.dc{font-size:11px;font-weight:600}.dc.up{color:var(--green)}.dc.dn{color:var(--red)}.dc.fl{color:var(--muted)}
+@media(max-width:768px){.cg.c2{grid-template-columns:1fr}.header,.page,.controls,.tabs{padding-left:16px;padding-right:16px}.cmp-wrap{margin-left:0}}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div>
-    <div class="header h1">Acme Co — Tracking Audit Dashboard</div>
-    <div class="sub">Jan – Jun 2025 &nbsp;·&nbsp; Synthetic data for demo</div>
+    <h1>Acme Co – Tracking Audit Dashboard</h1>
+    <div class="sub">Synthetic data &middot; Jan – Jun 2025</div>
   </div>
   <span class="badge">Platform 2 Preview</span>
+</div>
+
+<div class="controls">
+  <span class="ctrl-label">Period</span>
+  <select id="psel" class="ctrl-select" onchange="onP()">
+    <option value="7d">Last 7 Days</option>
+    <option value="1m">Last Month</option>
+    <option value="3m">Last Quarter</option>
+    <option value="6m" selected>All Data (6 mo.)</option>
+  </select>
+  <div id="dPill" class="date-pill">—</div>
+  <div class="sep"></div>
+  <div class="cmp-wrap">
+    <input type="checkbox" id="cmpTog" onchange="onC()">
+    <span onclick="document.getElementById('cmpTog').click()">Compare to prior period</span>
+    <span id="priorPill" class="prior-pill"></span>
+  </div>
 </div>
 
 <div class="tabs">
@@ -110,353 +95,284 @@
   <div class="tab"        onclick="showPage(2)">💰 Revenue by Source</div>
 </div>
 
-<!-- ══════════════════════════ PAGE 1 ══════════════════════════ -->
-<div class="page active" id="page0">
-
+<!-- PAGE 0 -->
+<div class="page active" id="pg0">
   <div class="scorecards">
-    <div class="scorecard teal">
-      <div class="label">Total Spend</div>
-      <div class="value">SGD 1,805,816</div>
-      <div class="sub">All platforms</div>
-    </div>
-    <div class="scorecard">
-      <div class="label">Impressions</div>
-      <div class="value">46,060,744</div>
-    </div>
-    <div class="scorecard purple">
-      <div class="label">Conversions</div>
-      <div class="value">28,994</div>
-    </div>
-    <div class="scorecard green">
-      <div class="label">ROAS</div>
-      <div class="value">3.03×</div>
-      <div class="sub">Blended</div>
-    </div>
-    <div class="scorecard amber">
-      <div class="label">Conv. Value</div>
-      <div class="value">SGD 5,468,742</div>
-    </div>
-    <div class="scorecard">
-      <div class="label">CTR</div>
-      <div class="value">2.18%</div>
-    </div>
+    <div class="sc teal"  ><div class="lbl">Total Spend</div><div class="val" id="v1a"></div><div class="sub">All platforms</div><div class="dlt" id="d1a"></div></div>
+    <div class="sc"       ><div class="lbl">Impressions</div><div class="val" id="v1b"></div><div class="dlt" id="d1b"></div></div>
+    <div class="sc purple"><div class="lbl">Conversions</div><div class="val" id="v1c"></div><div class="dlt" id="d1c"></div></div>
+    <div class="sc green" ><div class="lbl">ROAS</div><div class="val" id="v1d"></div><div class="sub">Blended</div><div class="dlt" id="d1d"></div></div>
+    <div class="sc amber" ><div class="lbl">Conv. Value</div><div class="val" id="v1e"></div><div class="dlt" id="d1e"></div></div>
+    <div class="sc"       ><div class="lbl">CTR</div><div class="val" id="v1f"></div><div class="dlt" id="d1f"></div></div>
   </div>
-
-  <div class="chart-grid cols-2" style="margin-bottom:20px">
-    <div class="chart-card">
-      <h3>Spend by Platform</h3>
-      <canvas id="p1SpendByPlatform"></canvas>
-    </div>
-    <div class="chart-card">
-      <h3>ROAS by Platform</h3>
-      <canvas id="p1RoasByPlatform"></canvas>
-    </div>
+  <div class="cg c2">
+    <div class="cc"><h3>Spend by Platform</h3><canvas id="ch1a"></canvas></div>
+    <div class="cc"><h3>ROAS by Platform</h3><canvas id="ch1b"></canvas></div>
   </div>
-
-  <div class="chart-grid" style="margin-bottom:20px">
-    <div class="chart-card tall">
-      <h3>Monthly Spend by Platform</h3>
-      <canvas id="p1MonthlySpend"></canvas>
-    </div>
-  </div>
-
-  <div class="chart-card">
-    <h3>Performance by Platform</h3>
-    <div class="tbl-wrap">
-      <table id="p1Table"></table>
-    </div>
-  </div>
+  <div class="cc tall" style="margin-bottom:18px"><h3>Spend Trend</h3><canvas id="ch1c"></canvas></div>
+  <div class="cc"><h3>Performance by Platform</h3><div class="tbl-wrap"><table id="tb1"></table></div></div>
 </div>
 
-<!-- ══════════════════════════ PAGE 2 ══════════════════════════ -->
-<div class="page" id="page1">
-
+<!-- PAGE 1 -->
+<div class="page" id="pg1">
   <div class="scorecards">
-    <div class="scorecard teal">
-      <div class="label">Sessions</div>
-      <div class="value">825,702</div>
-    </div>
-    <div class="scorecard purple">
-      <div class="label">Engaged Sessions</div>
-      <div class="value">550,617</div>
-      <div class="sub">Engagement rate: 66.7%</div>
-    </div>
-    <div class="scorecard amber">
-      <div class="label">Conversions</div>
-      <div class="value">22,112</div>
-      <div class="sub">Conv. rate: 2.68%</div>
-    </div>
-    <div class="scorecard green">
-      <div class="label">Revenue</div>
-      <div class="value">SGD 2,444,049</div>
-    </div>
+    <div class="sc teal"  ><div class="lbl">Sessions</div><div class="val" id="v2a"></div><div class="dlt" id="d2a"></div></div>
+    <div class="sc purple"><div class="lbl">Engaged Sessions</div><div class="val" id="v2b"></div><div class="sub" id="v2bs"></div><div class="dlt" id="d2b"></div></div>
+    <div class="sc amber" ><div class="lbl">Conversions</div><div class="val" id="v2c"></div><div class="sub" id="v2cs"></div><div class="dlt" id="d2c"></div></div>
+    <div class="sc green" ><div class="lbl">Revenue</div><div class="val" id="v2d"></div><div class="dlt" id="d2d"></div></div>
   </div>
-
-  <div class="chart-grid cols-2" style="margin-bottom:20px">
-    <div class="chart-card">
-      <h3>Acquisition Funnel</h3>
-      <div class="funnel" id="p2Funnel"></div>
-    </div>
-    <div class="chart-card">
-      <h3>Sessions by Channel</h3>
-      <canvas id="p2SessionsByChannel"></canvas>
-    </div>
+  <div class="cg c2">
+    <div class="cc"><h3>Acquisition Funnel</h3><div class="funnel" id="ch2a"></div></div>
+    <div class="cc"><h3>Sessions by Channel</h3><canvas id="ch2b"></canvas></div>
   </div>
-
-  <div class="chart-grid" style="margin-bottom:20px">
-    <div class="chart-card tall">
-      <h3>Monthly Sessions vs Conversions</h3>
-      <canvas id="p2MonthlyTrend"></canvas>
-    </div>
-  </div>
-
-  <div class="chart-card">
-    <h3>Channel Breakdown</h3>
-    <div class="tbl-wrap">
-      <table id="p2Table"></table>
-    </div>
-  </div>
+  <div class="cc tall" style="margin-bottom:18px"><h3>Sessions vs Conversions Over Time</h3><canvas id="ch2c"></canvas></div>
+  <div class="cc"><h3>Channel Breakdown</h3><div class="tbl-wrap"><table id="tb2"></table></div></div>
 </div>
 
-<!-- ══════════════════════════ PAGE 3 ══════════════════════════ -->
-<div class="page" id="page2">
-
+<!-- PAGE 2 -->
+<div class="page" id="pg2">
   <div class="scorecards">
-    <div class="scorecard green">
-      <div class="label">Net Revenue</div>
-      <div class="value">SGD 106,274</div>
-      <div class="sub">Completed orders</div>
-    </div>
-    <div class="scorecard teal">
-      <div class="label">Gross Revenue</div>
-      <div class="value">SGD 121,297</div>
-    </div>
-    <div class="scorecard purple">
-      <div class="label">Orders</div>
-      <div class="value">2,237</div>
-    </div>
-    <div class="scorecard amber">
-      <div class="label">Avg Order Value</div>
-      <div class="value">SGD 47.51</div>
-    </div>
+    <div class="sc green" ><div class="lbl">Net Revenue</div><div class="val" id="v3a"></div><div class="sub">Completed orders</div><div class="dlt" id="d3a"></div></div>
+    <div class="sc teal"  ><div class="lbl">Gross Revenue</div><div class="val" id="v3b"></div><div class="dlt" id="d3b"></div></div>
+    <div class="sc purple"><div class="lbl">Orders</div><div class="val" id="v3c"></div><div class="dlt" id="d3c"></div></div>
+    <div class="sc amber" ><div class="lbl">Avg Order Value</div><div class="val" id="v3d"></div><div class="dlt" id="d3d"></div></div>
   </div>
-
-  <div class="chart-grid cols-2" style="margin-bottom:20px">
-    <div class="chart-card">
-      <h3>Net Revenue by Platform</h3>
-      <canvas id="p3RevByPlatform"></canvas>
-    </div>
-    <div class="chart-card">
-      <h3>Top Products by Revenue</h3>
-      <canvas id="p3RevByProduct"></canvas>
-    </div>
+  <div class="cg c2">
+    <div class="cc"><h3>Net Revenue by Platform</h3><canvas id="ch3a"></canvas></div>
+    <div class="cc"><h3>Top Products by Revenue</h3><canvas id="ch3b"></canvas></div>
   </div>
-
-  <div class="chart-grid" style="margin-bottom:20px">
-    <div class="chart-card tall">
-      <h3>Monthly Revenue by Platform</h3>
-      <canvas id="p3MonthlyRev"></canvas>
-    </div>
-  </div>
-
-  <div class="chart-card">
-    <h3>Revenue by Platform</h3>
-    <div class="tbl-wrap">
-      <table id="p3Table"></table>
-    </div>
-  </div>
+  <div class="cc tall" style="margin-bottom:18px"><h3>Revenue Trend</h3><canvas id="ch3c"></canvas></div>
+  <div class="cc"><h3>Revenue by Platform</h3><div class="tbl-wrap"><table id="tb3"></table></div></div>
 </div>
 
 <script>
-// ── Data ──────────────────────────────────────────────────────────────────────
-const COLORS = ["#0891B2", "#7C3AED", "#059669", "#D97706", "#EF4444", "#0F2D40", "#06B6D4", "#8B5CF6", "#10B981", "#F59E0B"];
+const PERIODS = {"7d":{"current":{"dateRange":"Jun 23 \u2013 Jun 29, 2025","ad":{"totals":{"spend":76097.0,"impressions":1989886,"clicks":43095,"conversions":1216,"conv_value":219715.0,"roas":2.89,"ctr":2.17},"byPlatform":[{"platform":"Google Ads","spend":48201.84,"impressions":591122,"clicks":27671,"conversions":941,"conv_value":161375.88,"roas":3.35,"ctr":4.68},{"platform":"LinkedIn Ads","spend":17674.72,"impressions":342058,"clicks":2448,"conversions":30,"conv_value":31868.58,"roas":1.8,"ctr":0.72},{"platform":"Meta","spend":6849.27,"impressions":661586,"clicks":7367,"conversions":151,"conv_value":20574.23,"roas":3.0,"ctr":1.11},{"platform":"TikTok Ads","spend":3370.84,"impressions":395120,"clicks":5609,"conversions":94,"conv_value":5896.02,"roas":1.75,"ctr":1.42}],"trend":{"labels":["Jun 23","Jun 24","Jun 25","Jun 26","Jun 27","Jun 28","Jun 29"],"relLabels":["Day 1","Day 2","Day 3","Day 4","Day 5","Day 6","Day 7"],"datasets":[{"label":"Google Ads","data":[7073.0,8786.0,7268.0,6875.0,6606.0,6764.0,4831.0]},{"label":"LinkedIn Ads","data":[2496.0,2975.0,2961.0,1903.0,2613.0,2460.0,2267.0]},{"label":"Meta","data":[739.0,1250.0,959.0,1056.0,1136.0,852.0,858.0]},{"label":"TikTok Ads","data":[443.0,451.0,499.0,533.0,652.0,369.0,425.0]}]}},"web":{"totals":{"sessions":35365,"engaged":23855,"conversions":910,"revenue":94495.0,"eng_rate":67.5,"conv_rate":2.57},"funnel":[{"stage":"Sessions","value":35365},{"stage":"Engaged Sessions","value":23855},{"stage":"Conversions","value":910}],"byChannel":[{"channel_group":"Paid Search","sessions":10227,"engaged":6711,"conversions":303,"revenue":28437.73},{"channel_group":"Organic Search","sessions":7815,"engaged":5464,"conversions":156,"revenue":15476.8},{"channel_group":"Paid Social","sessions":6713,"engaged":4395,"conversions":139,"revenue":13284.5},{"channel_group":"Direct","sessions":4191,"engaged":2813,"conversions":109,"revenue":13720.29},{"channel_group":"Organic Social","sessions":3625,"engaged":2573,"conversions":72,"revenue":8072.64},{"channel_group":"Email","sessions":1755,"engaged":1216,"conversions":113,"revenue":13653.58},{"channel_group":"Referral","sessions":1039,"engaged":683,"conversions":18,"revenue":1849.16}],"trend":{"labels":["Jun 23","Jun 24","Jun 25","Jun 26","Jun 27","Jun 28","Jun 29"],"relLabels":["Day 1","Day 2","Day 3","Day 4","Day 5","Day 6","Day 7"],"sessions":[5333,4683,5685,5983,5988,3852,3841],"conversions":[127,128,150,148,144,103,110],"revenue":[12377.39,13130.1,13075.14,17179.14,11481.27,11781.26,15470.4]}},"eco":{"totals":{"net_revenue":3967.0,"gross_revenue":4537,"orders":89,"aov":44.57},"byPlatform":[{"platform":"Shopee","net_revenue":1616.21,"orders":37},{"platform":"TikTok Shop","net_revenue":2350.51,"orders":52}],"topProducts":[{"product_name":"Gift Set Bundle","net_revenue":1373.2,"orders":15},{"product_name":"Vitamin C Cream","net_revenue":802.64,"orders":19},{"product_name":"SPF50 Sunscreen","net_revenue":799.11,"orders":24},{"product_name":"Hydrating Serum 30ml","net_revenue":541.07,"orders":12},{"product_name":"Cleanser 150ml","net_revenue":450.7,"orders":19}],"trend":{"labels":["Jun 23","Jun 24","Jun 25","Jun 26","Jun 27","Jun 28","Jun 29"],"relLabels":["Day 1","Day 2","Day 3","Day 4","Day 5","Day 6","Day 7"],"datasets":[{"label":"Shopee","data":[245.7,221.41,553.54,158.16,154.04,178.12,105.24]},{"label":"TikTok Shop","data":[243.72,341.91,241.64,398.96,360.68,600.54,163.06]}]}}},"prior":{"dateRange":"Jun 16 \u2013 Jun 22, 2025","ad":{"totals":{"spend":74762.0,"impressions":1980169,"clicks":41630,"conversions":1205,"conv_value":209925.0,"roas":2.81,"ctr":2.1},"byPlatform":[{"platform":"Google Ads","spend":47523.19,"impressions":570532,"clicks":25828,"conversions":910,"conv_value":156452.02,"roas":3.29,"ctr":4.53},{"platform":"LinkedIn Ads","spend":16561.61,"impressions":326346,"clicks":2457,"conversions":29,"conv_value":28891.87,"roas":1.74,"ctr":0.75},{"platform":"Meta","spend":7165.69,"impressions":683681,"clicks":7769,"conversions":178,"conv_value":18250.32,"roas":2.55,"ctr":1.14},{"platform":"TikTok Ads","spend":3511.44,"impressions":399610,"clicks":5576,"conversions":88,"conv_value":6330.83,"roas":1.8,"ctr":1.4}],"trend":{"labels":["Jun 16","Jun 17","Jun 18","Jun 19","Jun 20","Jun 21","Jun 22"],"relLabels":["Day 1","Day 2","Day 3","Day 4","Day 5","Day 6","Day 7"],"datasets":[{"label":"Google Ads","data":[6066.0,7611.0,7775.0,6877.0,7934.0,5668.0,5594.0]},{"label":"LinkedIn Ads","data":[2530.0,3288.0,1976.0,2708.0,2170.0,2289.0,1600.0]},{"label":"Meta","data":[1124.0,1272.0,883.0,1092.0,1034.0,833.0,929.0]},{"label":"TikTok Ads","data":[683.0,575.0,464.0,407.0,516.0,478.0,388.0]}]}},"web":{"totals":{"sessions":33387,"engaged":22719,"conversions":916,"revenue":109854.0,"eng_rate":68.0,"conv_rate":2.74},"funnel":[{"stage":"Sessions","value":33387},{"stage":"Engaged Sessions","value":22719},{"stage":"Conversions","value":916}],"byChannel":[{"channel_group":"Paid Search","sessions":9656,"engaged":6560,"conversions":385,"revenue":47801.2},{"channel_group":"Organic Search","sessions":7986,"engaged":5157,"conversions":152,"revenue":17830.22},{"channel_group":"Paid Social","sessions":5992,"engaged":4281,"conversions":110,"revenue":15114.96},{"channel_group":"Direct","sessions":3836,"engaged":2639,"conversions":101,"revenue":11505.67},{"channel_group":"Organic Social","sessions":3353,"engaged":2360,"conversions":57,"revenue":6282.43},{"channel_group":"Email","sessions":1590,"engaged":1113,"conversions":95,"revenue":9939.7},{"channel_group":"Referral","sessions":974,"engaged":609,"conversions":16,"revenue":1379.53}],"trend":{"labels":["Jun 16","Jun 17","Jun 18","Jun 19","Jun 20","Jun 21","Jun 22"],"relLabels":["Day 1","Day 2","Day 3","Day 4","Day 5","Day 6","Day 7"],"sessions":[5513,5290,4629,4581,4694,4852,3828],"conversions":[151,150,131,117,135,133,99],"revenue":[15946.98,20048.71,15900.48,11885.53,18174.3,15536.54,12361.17]}},"eco":{"totals":{"net_revenue":4370.0,"gross_revenue":4913,"orders":93,"aov":46.99},"byPlatform":[{"platform":"Shopee","net_revenue":2624.66,"orders":54},{"platform":"TikTok Shop","net_revenue":1745.48,"orders":39}],"topProducts":[{"product_name":"Gift Set Bundle","net_revenue":1462.51,"orders":17},{"product_name":"Vitamin C Cream","net_revenue":1295.39,"orders":23},{"product_name":"Hydrating Serum 30ml","net_revenue":643.76,"orders":16},{"product_name":"SPF50 Sunscreen","net_revenue":603.65,"orders":22},{"product_name":"Cleanser 150ml","net_revenue":364.83,"orders":15}],"trend":{"labels":["Jun 16","Jun 17","Jun 18","Jun 19","Jun 20","Jun 21","Jun 22"],"relLabels":["Day 1","Day 2","Day 3","Day 4","Day 5","Day 6","Day 7"],"datasets":[{"label":"Shopee","data":[287.22,202.77,624.32,402.49,205.47,718.09,184.3]},{"label":"TikTok Shop","data":[265.09,214.25,298.79,47.95,362.91,378.45,178.04]}]}}}},"1m":{"current":{"dateRange":"Jun 01 \u2013 Jun 29, 2025","ad":{"totals":{"spend":317645.0,"impressions":8142248,"clicks":175644,"conversions":5115,"conv_value":936904.0,"roas":2.95,"ctr":2.16},"byPlatform":[{"platform":"Google Ads","spend":206986.66,"impressions":2414453,"clicks":112478,"conversions":3963,"conv_value":716886.89,"roas":3.46,"ctr":4.66},{"platform":"LinkedIn Ads","spend":69057.86,"impressions":1375441,"clicks":10029,"conversions":121,"conv_value":120264.57,"roas":1.74,"ctr":0.73},{"platform":"Meta","spend":28457.8,"impressions":2723539,"clicks":30827,"conversions":669,"conv_value":76489.42,"roas":2.69,"ctr":1.13},{"platform":"TikTok Ads","spend":13142.3,"impressions":1628815,"clicks":22310,"conversions":362,"conv_value":23262.79,"roas":1.77,"ctr":1.37}],"trend":{"labels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"relLabels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"datasets":[{"label":"Google Ads","data":[53369.0,50496.0,49326.0,48965.0,4831.0]},{"label":"LinkedIn Ads","data":[15845.0,16580.0,17359.0,17007.0,2267.0]},{"label":"Meta","data":[6667.0,7051.0,6962.0,6920.0,858.0]},{"label":"TikTok Ads","data":[2883.0,3013.0,3487.0,3334.0,425.0]}]}},"web":{"totals":{"sessions":145795,"engaged":98208,"conversions":3941,"revenue":437106.0,"eng_rate":67.4,"conv_rate":2.7},"funnel":[{"stage":"Sessions","value":145795},{"stage":"Engaged Sessions","value":98208},{"stage":"Conversions","value":3941}],"byChannel":[{"channel_group":"Paid Search","sessions":43024,"engaged":29336,"conversions":1505,"revenue":159299.04},{"channel_group":"Organic Search","sessions":32980,"engaged":22088,"conversions":651,"revenue":76034.05},{"channel_group":"Paid Social","sessions":26420,"engaged":17402,"conversions":517,"revenue":63007.5},{"channel_group":"Direct","sessions":16959,"engaged":11440,"conversions":463,"revenue":51889.23},{"channel_group":"Organic Social","sessions":14900,"engaged":10328,"conversions":285,"revenue":31505.8},{"channel_group":"Email","sessions":7201,"engaged":4800,"conversions":445,"revenue":46922.22},{"channel_group":"Referral","sessions":4311,"engaged":2814,"conversions":75,"revenue":8448.44}],"trend":{"labels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"relLabels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"sessions":[34048,38262,34292,35352,3841],"conversions":[914,1080,938,899,110],"revenue":[102423.9,119071.58,108754.93,91385.47,15470.4]}},"eco":{"totals":{"net_revenue":16516.0,"gross_revenue":18707,"orders":362,"aov":45.63},"byPlatform":[{"platform":"Shopee","net_revenue":7870.75,"orders":178},{"platform":"TikTok Shop","net_revenue":8645.54,"orders":184}],"topProducts":[{"product_name":"Gift Set Bundle","net_revenue":5998.07,"orders":65},{"product_name":"Vitamin C Cream","net_revenue":3680.87,"orders":77},{"product_name":"SPF50 Sunscreen","net_revenue":2716.55,"orders":90},{"product_name":"Hydrating Serum 30ml","net_revenue":2485.43,"orders":60},{"product_name":"Cleanser 150ml","net_revenue":1635.37,"orders":70}],"trend":{"labels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"relLabels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"datasets":[{"label":"Shopee","data":[1441.62,2110.99,2517.63,1695.27,105.24]},{"label":"TikTok Shop","data":[2791.53,1574.12,1751.34,2365.49,163.06]}]}}},"prior":{"dateRange":"May 03 \u2013 May 31, 2025","ad":{"totals":{"spend":302117.0,"impressions":7824527,"clicks":169097,"conversions":4787,"conv_value":923348.0,"roas":3.06,"ctr":2.16},"byPlatform":[{"platform":"Google Ads","spend":199486.18,"impressions":2322714,"clicks":108400,"conversions":3688,"conv_value":713530.41,"roas":3.58,"ctr":4.67},{"platform":"LinkedIn Ads","spend":61947.93,"impressions":1311438,"clicks":9656,"conversions":113,"conv_value":111577.46,"roas":1.8,"ctr":0.74},{"platform":"Meta","spend":27826.39,"impressions":2621626,"clicks":30080,"conversions":664,"conv_value":74615.36,"roas":2.68,"ctr":1.15},{"platform":"TikTok Ads","spend":12856.45,"impressions":1568749,"clicks":20961,"conversions":322,"conv_value":23624.85,"roas":1.84,"ctr":1.34}],"trend":{"labels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"relLabels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"datasets":[{"label":"Google Ads","data":[45913.0,50204.0,44974.0,52385.0,6011.0]},{"label":"LinkedIn Ads","data":[14015.0,14792.0,15498.0,15202.0,2441.0]},{"label":"Meta","data":[7088.0,6224.0,7025.0,6743.0,747.0]},{"label":"TikTok Ads","data":[3153.0,2984.0,3139.0,3136.0,445.0]}]}},"web":{"totals":{"sessions":140161,"engaged":93808,"conversions":3795,"revenue":423779.0,"eng_rate":66.9,"conv_rate":2.71},"funnel":[{"stage":"Sessions","value":140161},{"stage":"Engaged Sessions","value":93808},{"stage":"Conversions","value":3795}],"byChannel":[{"channel_group":"Paid Search","sessions":42226,"engaged":27634,"conversions":1462,"revenue":164580.07},{"channel_group":"Organic Search","sessions":30629,"engaged":20950,"conversions":613,"revenue":76739.46},{"channel_group":"Paid Social","sessions":24798,"engaged":16703,"conversions":482,"revenue":50121.75},{"channel_group":"Direct","sessions":17243,"engaged":11501,"conversions":495,"revenue":53734.02},{"channel_group":"Organic Social","sessions":14026,"engaged":9513,"conversions":270,"revenue":28419.42},{"channel_group":"Email","sessions":7111,"engaged":4695,"conversions":407,"revenue":43207.4},{"channel_group":"Referral","sessions":4128,"engaged":2812,"conversions":66,"revenue":6976.6}],"trend":{"labels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"relLabels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"sessions":[36733,31390,32854,34065,5119],"conversions":[989,331,886,942,147],"revenue":[106323.9,87764.64,100497.75,111986.09,17206.34]}},"eco":{"totals":{"net_revenue":16684.0,"gross_revenue":19137,"orders":362,"aov":46.09},"byPlatform":[{"platform":"Shopee","net_revenue":8491.27,"orders":191},{"platform":"TikTok Shop","net_revenue":8192.47,"orders":171}],"topProducts":[{"product_name":"Gift Set Bundle","net_revenue":6527.94,"orders":70},{"product_name":"Vitamin C Cream","net_revenue":3578.13,"orders":80},{"product_name":"SPF50 Sunscreen","net_revenue":2552.32,"orders":87},{"product_name":"Hydrating Serum 30ml","net_revenue":2412.63,"orders":60},{"product_name":"Cleanser 150ml","net_revenue":1612.72,"orders":65}],"trend":{"labels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"relLabels":["Week 1","Week 2","Week 3","Week 4","Week 5"],"datasets":[{"label":"Shopee","data":[1859.29,2082.43,2606.01,1793.72,149.82]},{"label":"TikTok Shop","data":[1612.0,1797.02,1781.76,2706.62,295.07]}]}}}},"3m":{"current":{"dateRange":"Apr 01 \u2013 Jun 29, 2025","ad":{"totals":{"spend":953227.0,"impressions":24375510,"clicks":527003,"conversions":15324,"conv_value":2869480.0,"roas":3.01,"ctr":2.16},"byPlatform":[{"platform":"Google Ads","spend":626153.15,"impressions":7223161,"clicks":336460,"conversions":11895,"conv_value":2207261.6,"roas":3.53,"ctr":4.66},{"platform":"LinkedIn Ads","spend":200487.19,"impressions":4126700,"clicks":30383,"conversions":356,"conv_value":357097.56,"roas":1.78,"ctr":0.74},{"platform":"Meta","spend":86551.68,"impressions":8143642,"clicks":93514,"conversions":2025,"conv_value":232385.44,"roas":2.68,"ctr":1.15},{"platform":"TikTok Ads","spend":40035.46,"impressions":4882007,"clicks":66646,"conversions":1048,"conv_value":72735.13,"roas":1.82,"ctr":1.37}],"trend":{"labels":["2025-04","2025-05","2025-06"],"relLabels":["Month 1","Month 2","Month 3"],"datasets":[{"label":"Google Ads","data":[207155.0,212011.0,206987.0]},{"label":"LinkedIn Ads","data":[64328.0,67101.0,69058.0]},{"label":"Meta","data":[28405.0,29689.0,28458.0]},{"label":"TikTok Ads","data":[13093.0,13800.0,13142.0]}]}},"web":{"totals":{"sessions":436399,"engaged":291056,"conversions":11760,"revenue":1321677.0,"eng_rate":66.7,"conv_rate":2.69},"funnel":[{"stage":"Sessions","value":436399},{"stage":"Engaged Sessions","value":291056},{"stage":"Conversions","value":11760}],"byChannel":[{"channel_group":"Paid Search","sessions":130502,"engaged":87046,"conversions":4509,"revenue":502122.59},{"channel_group":"Organic Search","sessions":97355,"engaged":65194,"conversions":1919,"revenue":228236.28},{"channel_group":"Paid Social","sessions":78214,"engaged":51826,"conversions":1499,"revenue":169898.7},{"channel_group":"Direct","sessions":51863,"engaged":34586,"conversions":1495,"revenue":168797.4},{"channel_group":"Organic Social","sessions":43790,"engaged":29428,"conversions":842,"revenue":91495.57},{"channel_group":"Email","sessions":21802,"engaged":14472,"conversions":1278,"revenue":136815.99},{"channel_group":"Referral","sessions":12873,"engaged":8504,"conversions":218,"revenue":24310.08}],"trend":{"labels":["2025-04","2025-05","2025-06"],"relLabels":["Month 1","Month 2","Month 3"],"sessions":[142645,147959,145795],"conversions":[3806,4013,3941],"revenue":[439680.35,444889.98,437106.28]}},"eco":{"totals":{"net_revenue":55700.0,"gross_revenue":63582,"orders":1190,"aov":46.81},"byPlatform":[{"platform":"Shopee","net_revenue":28162.4,"orders":606},{"platform":"TikTok Shop","net_revenue":27537.36,"orders":584}],"topProducts":[{"product_name":"Gift Set Bundle","net_revenue":21782.56,"orders":231},{"product_name":"Vitamin C Cream","net_revenue":11803.84,"orders":249},{"product_name":"Hydrating Serum 30ml","net_revenue":8466.17,"orders":212},{"product_name":"SPF50 Sunscreen","net_revenue":8057.5,"orders":265},{"product_name":"Cleanser 150ml","net_revenue":5589.69,"orders":233}],"trend":{"labels":["2025-04","2025-05","2025-06"],"relLabels":["Month 1","Month 2","Month 3"],"datasets":[{"label":"Shopee","data":[11482.95,8808.7,7870.75]},{"label":"TikTok Shop","data":[10037.99,8853.83,8645.54]}]}}},"prior":{"dateRange":"Jan 01 \u2013 Mar 31, 2025","ad":{"totals":{"spend":852588.0,"impressions":21685234,"clicks":475091,"conversions":13670,"conv_value":2599262.0,"roas":3.05,"ctr":2.19},"byPlatform":[{"platform":"Google Ads","spend":562206.01,"impressions":6469625,"clicks":305029,"conversions":10680,"conv_value":2013130.0,"roas":3.58,"ctr":4.71},{"platform":"LinkedIn Ads","spend":176745.07,"impressions":3652555,"clicks":26532,"conversions":314,"conv_value":313592.36,"roas":1.77,"ctr":0.73},{"platform":"Meta","spend":76658.56,"impressions":7139347,"clicks":82887,"conversions":1759,"conv_value":206768.73,"roas":2.7,"ctr":1.16},{"platform":"TikTok Ads","spend":36978.83,"impressions":4423707,"clicks":60643,"conversions":917,"conv_value":65770.82,"roas":1.78,"ctr":1.37}],"trend":{"labels":["2025-01","2025-02","2025-03"],"relLabels":["Month 1","Month 2","Month 3"],"datasets":[{"label":"Google Ads","data":[181806.0,178213.0,202187.0]},{"label":"LinkedIn Ads","data":[57219.0,56281.0,63245.0]},{"label":"Meta","data":[25959.0,23820.0,26879.0]},{"label":"TikTok Ads","data":[12103.0,11690.0,13185.0]}]}},"web":{"totals":{"sessions":389303,"engaged":259561,"conversions":10352,"revenue":1122373.0,"eng_rate":66.7,"conv_rate":2.66},"funnel":[{"stage":"Sessions","value":389303},{"stage":"Engaged Sessions","value":259561},{"stage":"Conversions","value":10352}],"byChannel":[{"channel_group":"Paid Search","sessions":116598,"engaged":78749,"conversions":3921,"revenue":422642.69},{"channel_group":"Organic Search","sessions":86090,"engaged":57050,"conversions":1671,"revenue":179520.42},{"channel_group":"Paid Social","sessions":69819,"engaged":45965,"conversions":1345,"revenue":147197.2},{"channel_group":"Direct","sessions":46686,"engaged":31273,"conversions":1350,"revenue":148099.5},{"channel_group":"Organic Social","sessions":38691,"engaged":25793,"conversions":757,"revenue":81663.63},{"channel_group":"Email","sessions":19643,"engaged":12904,"conversions":1109,"revenue":121023.4},{"channel_group":"Referral","sessions":11776,"engaged":7827,"conversions":199,"revenue":22225.86}],"trend":{"labels":["2025-01","2025-02","2025-03"],"relLabels":["Month 1","Month 2","Month 3"],"sessions":[132581,119213,137509],"conversions":[3560,3164,3628],"revenue":[380961.08,352656.38,388755.24]}},"eco":{"totals":{"net_revenue":50574.0,"gross_revenue":57715,"orders":1047,"aov":48.3},"byPlatform":[{"platform":"Shopee","net_revenue":24782.71,"orders":523},{"platform":"TikTok Shop","net_revenue":25791.71,"orders":524}],"topProducts":[{"product_name":"Gift Set Bundle","net_revenue":21840.8,"orders":238},{"product_name":"Vitamin C Cream","net_revenue":9042.58,"orders":193},{"product_name":"Hydrating Serum 30ml","net_revenue":7744.43,"orders":190},{"product_name":"SPF50 Sunscreen","net_revenue":6099.72,"orders":204},{"product_name":"Cleanser 150ml","net_revenue":5846.89,"orders":222}],"trend":{"labels":["2025-01","2025-02","2025-03"],"relLabels":["Month 1","Month 2","Month 3"],"datasets":[{"label":"Shopee","data":[9533.11,6518.09,8731.51]},{"label":"TikTok Shop","data":[8318.93,7381.71,10091.07]}]}}}},"6m":{"current":{"dateRange":"Jan 01 \u2013 Jun 29, 2025","ad":{"totals":{"spend":1805816.0,"impressions":46060744,"clicks":1002094,"conversions":28994,"conv_value":5468742.0,"roas":3.03,"ctr":2.18},"byPlatform":[{"platform":"Google Ads","spend":1188359.16,"impressions":13692786,"clicks":641489,"conversions":22575,"conv_value":4220391.6,"roas":3.55,"ctr":4.68},{"platform":"LinkedIn Ads","spend":377232.26,"impressions":7779255,"clicks":56915,"conversions":670,"conv_value":670689.92,"roas":1.78,"ctr":0.73},{"platform":"Meta","spend":163210.24,"impressions":15282989,"clicks":176401,"conversions":3784,"conv_value":439154.17,"roas":2.69,"ctr":1.15},{"platform":"TikTok Ads","spend":77014.29,"impressions":9305714,"clicks":127289,"conversions":1965,"conv_value":138505.95,"roas":1.8,"ctr":1.37}],"trend":{"labels":["2025-01","2025-02","2025-03","2025-04","2025-05","2025-06"],"relLabels":["Month 1","Month 2","Month 3","Month 4","Month 5","Month 6"],"datasets":[{"label":"Google Ads","data":[181806.0,178213.0,202187.0,207155.0,212011.0,206987.0]},{"label":"LinkedIn Ads","data":[57219.0,56281.0,63245.0,64328.0,67101.0,69058.0]},{"label":"Meta","data":[25959.0,23820.0,26879.0,28405.0,29689.0,28458.0]},{"label":"TikTok Ads","data":[12103.0,11690.0,13185.0,13093.0,13800.0,13142.0]}]}},"web":{"totals":{"sessions":825702,"engaged":550617,"conversions":22112,"revenue":2444049.0,"eng_rate":66.7,"conv_rate":2.68},"funnel":[{"stage":"Sessions","value":825702},{"stage":"Engaged Sessions","value":550617},{"stage":"Conversions","value":22112}],"byChannel":[{"channel_group":"Paid Search","sessions":247100,"engaged":165795,"conversions":8430,"revenue":924765.28},{"channel_group":"Organic Search","sessions":183445,"engaged":122244,"conversions":3590,"revenue":407756.7},{"channel_group":"Paid Social","sessions":148033,"engaged":97791,"conversions":2844,"revenue":317095.9},{"channel_group":"Direct","sessions":98549,"engaged":65859,"conversions":2845,"revenue":316896.9},{"channel_group":"Organic Social","sessions":82481,"engaged":55221,"conversions":1599,"revenue":173159.2},{"channel_group":"Email","sessions":41445,"engaged":27376,"conversions":2387,"revenue":257839.39},{"channel_group":"Referral","sessions":24649,"engaged":16331,"conversions":417,"revenue":46535.94}],"trend":{"labels":["2025-01","2025-02","2025-03","2025-04","2025-05","2025-06"],"relLabels":["Month 1","Month 2","Month 3","Month 4","Month 5","Month 6"],"sessions":[132581,119213,137509,142645,147959,145795],"conversions":[3560,3164,3628,3806,4013,3941],"revenue":[380961.08,352656.38,388755.24,439680.35,444889.98,437106.28]}},"eco":{"totals":{"net_revenue":106274.0,"gross_revenue":121297,"orders":2237,"aov":47.51},"byPlatform":[{"platform":"Shopee","net_revenue":52945.11,"orders":1129},{"platform":"TikTok Shop","net_revenue":53329.07,"orders":1108}],"topProducts":[{"product_name":"Gift Set Bundle","net_revenue":43623.36,"orders":469},{"product_name":"Vitamin C Cream","net_revenue":20846.42,"orders":442},{"product_name":"Hydrating Serum 30ml","net_revenue":16210.6,"orders":402},{"product_name":"SPF50 Sunscreen","net_revenue":14157.22,"orders":469},{"product_name":"Cleanser 150ml","net_revenue":11436.58,"orders":455}],"trend":{"labels":["2025-01","2025-02","2025-03","2025-04","2025-05","2025-06"],"relLabels":["Month 1","Month 2","Month 3","Month 4","Month 5","Month 6"],"datasets":[{"label":"Shopee","data":[9533.11,6518.09,8731.51,11482.95,8808.7,7870.75]},{"label":"TikTok Shop","data":[8318.93,7381.71,10091.07,10037.99,8853.83,8645.54]}]}}},"prior":null}};
+const C=['#0891B2','#7C3AED','#059669','#D97706','#EF4444','#0F2D40','#06B6D4','#8B5CF6'];
+const FC=['#0891B2','#7C3AED','#D97706'];
+let AP='6m', CM=false;
+const CH={};
 
-const p1Platform = [{"platform": "Google Ads", "spend": 1188359.16, "impressions": 13692786, "clicks": 641489, "conversions": 22575, "conv_value": 4220391.6, "roas": 3.55}, {"platform": "LinkedIn Ads", "spend": 377232.26, "impressions": 7779255, "clicks": 56915, "conversions": 670, "conv_value": 670689.92, "roas": 1.78}, {"platform": "Meta", "spend": 163210.24, "impressions": 15282989, "clicks": 176401, "conversions": 3784, "conv_value": 439154.17, "roas": 2.69}, {"platform": "TikTok Ads", "spend": 77014.29, "impressions": 9305714, "clicks": 127289, "conversions": 1965, "conv_value": 138505.95, "roas": 1.8}];
-const p1Monthly  = {"labels": ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06"], "datasets": [{"label": "Google Ads", "data": [181806.49, 178212.99, 202186.53, 207155.1, 212011.39, 206986.66]}, {"label": "LinkedIn Ads", "data": [57219.08, 56280.94, 63245.05, 64328.12, 67101.21, 69057.86]}, {"label": "Meta", "data": [25959.18, 23820.27, 26879.11, 28404.87, 29689.01, 28457.8]}, {"label": "TikTok Ads", "data": [12103.13, 11690.3, 13185.4, 13092.81, 13800.35, 13142.3]}]};
-
-const p2Funnel   = [{"stage": "Sessions", "value": 825702}, {"stage": "Engaged Sessions", "value": 550617}, {"stage": "Conversions", "value": 22112}];
-const p2Channel  = [{"channel_group": "Paid Search", "sessions": 247100, "engaged": 165795, "conversions": 8430, "revenue": 924765.28}, {"channel_group": "Organic Search", "sessions": 183445, "engaged": 122244, "conversions": 3590, "revenue": 407756.7}, {"channel_group": "Paid Social", "sessions": 148033, "engaged": 97791, "conversions": 2844, "revenue": 317095.9}, {"channel_group": "Direct", "sessions": 98549, "engaged": 65859, "conversions": 2845, "revenue": 316896.9}, {"channel_group": "Organic Social", "sessions": 82481, "engaged": 55221, "conversions": 1599, "revenue": 173159.2}, {"channel_group": "Email", "sessions": 41445, "engaged": 27376, "conversions": 2387, "revenue": 257839.39}, {"channel_group": "Referral", "sessions": 24649, "engaged": 16331, "conversions": 417, "revenue": 46535.94}];
-const p2Monthly  = [{"month": "2025-01", "sessions": 132581, "conversions": 3560, "revenue": 380961.08}, {"month": "2025-02", "sessions": 119213, "conversions": 3164, "revenue": 352656.38}, {"month": "2025-03", "sessions": 137509, "conversions": 3628, "revenue": 388755.24}, {"month": "2025-04", "sessions": 142645, "conversions": 3806, "revenue": 439680.35}, {"month": "2025-05", "sessions": 147959, "conversions": 4013, "revenue": 444889.98}, {"month": "2025-06", "sessions": 145795, "conversions": 3941, "revenue": 437106.28}];
-
-const p3Platform = [{"platform": "TikTok Shop", "net_revenue": 53329.07, "orders": 1108}, {"platform": "Shopee", "net_revenue": 52945.11, "orders": 1129}];
-const p3Product  = [{"product_name": "Gift Set Bundle", "net_revenue": 43623.36, "orders": 469}, {"product_name": "Vitamin C Cream", "net_revenue": 20846.42, "orders": 442}, {"product_name": "Hydrating Serum 30ml", "net_revenue": 16210.6, "orders": 402}, {"product_name": "SPF50 Sunscreen", "net_revenue": 14157.22, "orders": 469}, {"product_name": "Cleanser 150ml", "net_revenue": 11436.58, "orders": 455}];
-const p3Monthly  = {"labels": ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06"], "datasets": [{"label": "Shopee", "data": [9533.11, 6518.09, 8731.51, 11482.95, 8808.7, 7870.75]}, {"label": "TikTok Shop", "data": [8318.93, 7381.71, 10091.07, 10037.99, 8853.83, 8645.54]}]};
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function fmt(n, prefix="", suffix="", decimals=0) {
-  if (n === null || n === undefined) return "—";
-  return prefix + Number(n).toLocaleString("en-SG", {minimumFractionDigits: decimals, maximumFractionDigits: decimals}) + suffix;
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function f(n,pre='',suf='',dec=0){
+  if(n===null||n===undefined)return'—';
+  return pre+Number(n).toLocaleString('en-SG',{minimumFractionDigits:dec,maximumFractionDigits:dec})+suf;
+}
+function delta(cur,pri,higherBetter=true){
+  if(pri===null||pri===undefined||pri===0)return null;
+  const pct=(cur-pri)/Math.abs(pri)*100;
+  const up=pct>=0;
+  const cls=Math.abs(pct)<0.5?'fl':(up?'up':'dn');
+  return{text:(up?'↑':'↓')+' '+Math.abs(pct).toFixed(1)+'%',cls};
+}
+function sc(vid,did,val,priorNum,higherBetter=true){
+  document.getElementById(vid).textContent=val;
+  const el=document.getElementById(did);
+  if(CM&&priorNum!==undefined&&priorNum!==null){
+    const cur=parseFloat(String(val).replace(/[^0-9.-]/g,''));
+    const d=delta(cur,priorNum,higherBetter);
+    if(d){el.textContent=d.text;el.className='dlt '+d.cls;el.style.display='inline-block';return;}
+  }
+  el.style.display='none';
+}
+function dc(cls,txt){return`<span class="dc ${cls}">${txt}</span>`;}
+function kx(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+function tbl(id,hdrs,rows){
+  document.getElementById(id).innerHTML=
+    '<thead><tr>'+hdrs.map(h=>`<th>${h}</th>`).join('')+'</tr></thead>'+
+    '<tbody>'+rows.map(r=>'<tr>'+r.map((c,i)=>`<td class="${typeof c==='number'?'num':''}">${c}</td>`).join('')+'</tr>').join('')+'</tbody>';
 }
 
-function barChart(id, labels, data, labelStr, color) {
-  new Chart(document.getElementById(id), {
-    type: "bar",
-    data: { labels, datasets: [{ label: labelStr, data, backgroundColor: color || COLORS[0],
-              borderRadius: 5, borderSkipped: false }] },
-    options: { responsive: true, plugins: { legend: { display: false } },
-                scales: { y: { grid: { color: "#F1F5F9" } }, x: { grid: { display: false } } } }
+// ── Chart helpers ─────────────────────────────────────────────────────────────
+function bar(id,labels,data,label,color,priData,priLabel){
+  kx(id);
+  const ds=[{label,data,backgroundColor:color,borderRadius:5,borderSkipped:false}];
+  if(CM&&priData)ds.push({label:priLabel||'Prior',data:priData,backgroundColor:color+'55',borderRadius:5,borderSkipped:false});
+  CH[id]=new Chart(document.getElementById(id),{
+    type:'bar',data:{labels,datasets:ds},
+    options:{responsive:true,
+      plugins:{legend:{display:CM&&!!priData,position:'bottom',labels:{boxWidth:12,font:{size:11}}}},
+      scales:{y:{grid:{color:'#F1F5F9'}},x:{grid:{display:false}}}}
+  });
+}
+function multiline(id,labels,datasets){
+  kx(id);
+  CH[id]=new Chart(document.getElementById(id),{
+    type:'line',
+    data:{labels,datasets:datasets.map((ds,i)=>({
+      ...ds,
+      borderColor:C[i%C.length]+(ds.p?'88':''),
+      backgroundColor:C[i%C.length]+'22',
+      borderWidth:ds.p?1.5:2.5,
+      borderDash:ds.p?[6,3]:[],
+      pointRadius:ds.p?2:3,fill:false,tension:0.3
+    }))},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}},
+      scales:{y:{grid:{color:'#F1F5F9'}},x:{grid:{display:false}}}}
+  });
+}
+function dualline(id,labels,sDs,cDs){
+  kx(id);
+  CH[id]=new Chart(document.getElementById(id),{
+    type:'line',data:{labels,datasets:sDs.concat(cDs||[])},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}},
+      scales:{
+        y:{position8'left',grid:{color:'#F1F5F9'},title:{display:true,text:'Sessions'}},
+        y2:{position:'right',grid:{display:false},title:{display:true,text:'Conversions'}},
+        x:{grid:{display:false}}}}
   });
 }
 
-function multiLineChart(id, monthlyData, yLabel) {
-  const palette = ["#0891B2","#7C3AED","#059669","#D97706","#EF4444","#0F2D40"];
-  new Chart(document.getElementById(id), {
-    type: "line",
-    data: {
-      labels: monthlyData.labels,
-      datasets: monthlyData.datasets.map((ds, i) => ({
-        ...ds,
-        borderColor: palette[i % palette.length],
-        backgroundColor: palette[i % palette.length] + "22",
-        borderWidth: 2.5,
-        pointRadius: 3,
-        fill: false,
-        tension: 0.3
-      }))
-    },
-    options: {
-      responsive: true,
-      interaction: { mode: "index", intersect: false },
-      plugins: { legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } } },
-      scales: { y: { grid: { color: "#F1F5F9" } }, x: { grid: { display: false } } }
-    }
-  });
+// ── Align trend labels ────────────────────────────────────────────────────────
+function alignLabels(curTrend,priorTrend){
+  const n=priorTrend?Math.min(curTrend.labels.length,priorTrend.labels.length):curTrend.labels.length;
+  const labels=CM&&priorTrend&&curTrend.relLabels.length?curTrend.relLabels.slice(0,n):curTrend.labels.slice(0,n);
+  return{labels,n};
 }
 
-function buildTable(id, headers, rows) {
-  const t = document.getElementById(id);
-  const thead = "<thead><tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr></thead>";
-  const tbody = "<tbody>" + rows.map(r => "<tr>" + r.map((c, i) =>
-    `<td class="${typeof c === "number" ? "num" : ""}">${c}</td>`
-  ).join("") + "</tr>").join("") + "</tbody>";
-  t.innerHTML = thead + tbody;
+// ── Page 0 ────────────────────────────────────────────────────────────────────
+function rP0(cur,pri){
+  const t=cur.ad.totals,p=pri?pri.ad.totals:null;
+  sc('v1a','d1a',f(t.spend,'SGD '),p?.spend);
+  sc('v1b','d1b',f(t.impressions),p?.impressions);
+  sc('v1c','d1c',f(t.conversions),p?.conversions);
+  sc('v1d','d1d',f(t.roas,'','×',2),p?.roas);
+  sc('v1e','d1e',f(t.conv_value,'SGD '),p?.conv_value);
+  sc('v1f','d1f',f(t.ctr,'','%',2),p?.ctr);
+
+  const byP=cur.ad.byPlatform,pbyP=pri?pri.ad.byPlatform:null;
+  const pL=byP.map(r=>r.platform);
+  bar('ch1a',pL,byP.map(r=>r.spend),'Spend (SGD)','#0891B2',
+      pbyP?pL.map(pl=>{const r=pbyP.find(x=>x.platform===pl);return r?r.spend:0;}):null,'Prior Spend');
+  bar('ch1b',pL,byP.map(r=>r.roas),'ROAS','#7C3AED',
+      pbyP?pL.map(pl=>{const r=pbyP.find(x=>x.platform===pl);return r?r.roas:0;}):null,'Prior ROAS');
+
+  const tr=cur.ad.trend,ptr=pri?pri.ad.trend:null;
+  const{labels,n}=alignLabels(tr,ptr);
+  let ds=tr.datasets.map(d=>({...d,data:d.data.slice(0,n)}));
+  if(CM&&ptr)ds=ds.concat(ptr.datasets.map(d=>({label:d.label+' (Prior)',data:d.data.slice(0,n),p:true})));
+  multiline('ch1c',labels,ds);
+
+  const hdrs=['Platform','Spend (SGD)','Impressions','Clicks','CTR','Conversions','Conv. Value','ROAS'].concat(CM&&pbyP?['vs Prior']:[]);
+  tbl('tb1',hdrs,byP.map(r=>{
+    const pr=pbyP?pbyP.find(x=>x.platform===r.platform):null;
+    const d=pr?delta(r.spend,pr.spend):null;
+    return[r.platform,f(r.spend,'SGD '),f(r.impressions),f(r.clicks),
+           f(r.ctr,'','%',2),f(r.conversions),f(r.conv_value,'SGD '),
+           f(r.roas,'','×',2)].concat(CM&&pbyP?[d?dc(d.cls,d.text):'—']:[]);
+  }));
 }
 
-// ── Page navigation ───────────────────────────────────────────────────────────
-function showPage(n) {
-  document.querySelectorAll(".page").forEach((p, i) => p.classList.toggle("active", i === n));
-  document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", i === n));
-}
+// ── Page 1 ────────────────────────────────────────────────────────────────────
+function rP1(cur,pri){
+  const t=cur.web.totals,p=pri?pri.web.totals:null;
+  sc('v2a','d2a',f(t.sessions),p?.sessions);
+  sc('v2b','d2b',f(t.engaged),p?.engaged);
+  sc('v2c','d2c',f(t.conversions),p?.conversions);
+  sc('v2d','d2d',f(t.revenue,'SGD '),p?.revenue);
+  document.getElementById('v2bs').textContent='Engagement rate: '+f(t.eng_rate,'','%',1);
+  document.getElementById('v2cs').textContent='Conv. rate: '+f(t.conv_rate,'','%',2);
 
-// ── Page 1 charts ─────────────────────────────────────────────────────────────
-barChart("p1SpendByPlatform",
-  p1Platform.map(r => r.platform),
-  p1Platform.map(r => r.spend),
-  "Spend (SGD)", "#0891B2");
-
-barChart("p1RoasByPlatform",
-  p1Platform.map(r => r.platform),
-  p1Platform.map(r => r.roas),
-  "ROAS", "#7C3AED");
-
-multiLineChart("p1MonthlySpend", p1Monthly, "Spend (SGD)");
-
-buildTable("p1Table",
-  ["Platform","Spend (SGD)","Impressions","Clicks","CTR","Conversions","Conv. Value","ROAS"],
-  p1Platform.map(r => [
-    r.platform,
-    fmt(r.spend, "SGD "),
-    fmt(r.impressions),
-    fmt(r.clicks),
-    fmt(r.clicks / r.impressions * 100, "", "%", 2),
-    fmt(r.conversions),
-    fmt(r.conv_value, "SGD "),
-    fmt(r.roas, "", "×", 2)
-  ])
-);
-
-// ── Page 2 charts ─────────────────────────────────────────────────────────────
-const funnelEl = document.getElementById("p2Funnel");
-const funnelMax = p2Funnel[0].value;
-const funnelColors = ["#0891B2","#7C3AED","#D97706"];
-p2Funnel.forEach((item, i) => {
-  const pct = Math.round(item.value / funnelMax * 100);
-  const prevVal = i === 0 ? item.value : p2Funnel[i-1].value;
-  const dropPct = i === 0 ? 100 : Math.round(item.value / prevVal * 100);
-  funnelEl.innerHTML += `
-    <div class="funnel-bar">
-      <div class="funnel-label">${item.stage}</div>
-      <div class="funnel-track">
-        <div class="funnel-fill" style="width:${pct}%; background:${funnelColors[i]}">
-          ${item.value.toLocaleString("en-SG")}
-        </div>
-      </div>
-      <div class="funnel-pct">${i === 0 ? "100% baseline" : dropPct + "% of prev. stage"}</div>
+  const fn=cur.web.funnel,pfn=pri?pri.web.funnel:null;
+  const fMax=fn[0].value;
+  document.getElementById('ch2a').innerHTML=fn.map((item,i)=>{
+    const pct=Math.round(item.value/fMax*100);
+    const prev=i===0?item.value:fn[i-1].value;
+    const drop=i===0?100:Math.round(item.value/prev*100);
+    const pItem=pfn?pfn[i]:null;
+    const d=CM&&pItem?delta(item.value,pItem.value):null;
+    return`<div class="fb">
+      <div class="lbl">${item.stage}</div>
+      <div class="track"><div class="fill" style="width:${pct}%;background:${FC[i]}">${item.value.toLocaleString('en-SG')}</div></div>
+      <div class="meta"><span>${i===0?'100% baseline':drop+'% of prev. stage'}</span>${d?`<span class="dd ${d.cls}">${d.text}</span>`:''}</div>
     </div>`;
-});
+  }).join('');
 
-barChart("p2SessionsByChannel",
-  p2Channel.map(r => r.channel_group),
-  p2Channel.map(r => r.sessions),
-  "Sessions", "#0891B2");
+  const byC=cur.web.byChannel,pbyC=pri?pri.web.byChannel:null;
+  const cL=byC.map(r=>r.channel_group);
+  bar('ch2b',cL,byC.map(r=>r.sessions),'Sessions','#0891B2',
+      pbyC?cL.map(ch=>{const r=pbyC.find(x=>x.channel_group===ch);return r?r.sessions:0;}):null,'Prior Sessions');
 
-const p2MonthlyData = {
-  labels: p2Monthly.map(r => r.month),
-  datasets: [
-    { label: "Sessions",    data: p2Monthly.map(r => r.sessions),    borderColor: "#0891B2", backgroundColor: "#0891B222", borderWidth: 2.5, pointRadius: 3, fill: false, tension: .3 },
-    { label: "Conversions", data: p2Monthly.map(r => r.conversions), borderColor: "#7C3AED", backgroundColor: "#7C3AED22", borderWidth: 2.5, pointRadius: 3, fill: false, tension: .3, yAxisID: "y2" }
-  ]
-};
-new Chart(document.getElementById("p2MonthlyTrend"), {
-  type: "line", data: p2MonthlyData,
-  options: {
-    responsive: true,
-    interaction: { mode: "index", intersect: false },
-    plugins: { legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } } },
-    scales: {
-      y:  { position: "left",  grid: { color: "#F1F5F9" }, title: { display: true, text: "Sessions" } },
-      y2: { position: "right", grid: { display: false },   title: { display: true, text: "Conversions" } },
-      x:  { grid: { display: false } }
-    }
+  const tr=cur.web.trend,ptr=pri?pri.web.trend:null;
+  const{labels,n}=alignLabels(tr,ptr);
+  const sessDs=[{label:'Sessions',data:tr.sessions.slice(0,n),borderColor:'#0891B2',backgroundColor:'#0891B222',borderWidth:2.5,pointRadius:3,fill:false,tension:.3,yAxisID:'y'}];
+  const convDs=[{label:'Conversions',data:tr.conversions.slice(0,n),borderColor:'#7C3AED',backgroundColor:'#7C3AED22',borderWidth:2.5,pointRadius:3,fill:false,tension:.3,yAxisID:'y2'}];
+  if(CM&&ptr){
+    sessDs.push({label:'Sessions (Prior)',data:ptr.sessions.slice(0,n),borderColor:'#0891B288',borderWidth:1.5,borderDash:[6,3],pointRadius:2,fill:false,tension:.3,yAxisID:'y'});
+    convDs.push({label:'Conversions (Prior)',data:ptr.conversions.slice(0,n),borderColor:'#7C3AED88',borderWidth:1.5,borderDash:[6,3],pointRadius:2,fill:false,tension:.3,yAxisID:'y2'});
   }
-});
+  dualline('ch2c',labels,sessDs,convDs);
 
-buildTable("p2Table",
-  ["Channel","Sessions","Engaged","Eng. Rate","Conversions","Conv. Rate","Revenue (SGD)"],
-  p2Channel.map(r => [
-    r.channel_group,
-    fmt(r.sessions),
-    fmt(r.engaged),
-    fmt(r.engaged / r.sessions * 100, "", "%", 1),
-    fmt(r.conversions),
-    fmt(r.conversions / r.sessions * 100, "", "%", 2),
-    fmt(r.revenue, "SGD ")
-  ])
-);
+  tbl('tb2',['Channel','Sessions','Engaged','Eng. Rate','Conversions','Conv. Rate','Revenue (SGD)'],
+    byC.map(r=>[r.channel_group,f(r.sessions),f(r.engaged),
+      f(r.engaged/r.sessions*100,'','%',1),f(r.conversions),
+      f(r.conversions/r.sessions*100,'','%',2),f(r.revenue,'SGD ')]));
+}
 
-// ── Page 3 charts ─────────────────────────────────────────────────────────────
-barChart("p3RevByPlatform",
-  p3Platform.map(r => r.platform),
-  p3Platform.map(r => r.net_revenue),
-  "Net Revenue (SGD)", "#059669");
+// ── Page 2 ────────────────────────────────────────────────────────────────────
+function rP2(cur,pri){
+  const t=cur.eco.totals,p=pri?pri.eco.totals:null;
+  sc('v3a','d3a',f(t.net_revenue,'SGD '),p?.net_revenue);
+  sc('v3b','d3b',f(t.gross_revenue,'SGD '),p?.gross_revenue);
+  sc('v3c','d3c',f(t.orders),p?.orders);
+  sc('v3d','d3d',f(t.aov,'SGD ','',2),p?.aov);
 
-new Chart(document.getElementById("p3RevByProduct"), {
-  type: "bar",
-  data: {
-    labels: p3Product.map(r => r.product_name),
-    datasets: [{ label: "Net Revenue (SGD)", data: p3Product.map(r => r.net_revenue),
-      backgroundColor: p3Product.map((_, i) => COLORS[i % COLORS.length]),
-      borderRadius: 5 }]
-  },
-  options: {
-    indexAxis: "y",
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: { x: { grid: { color: "#F1F5F9" } }, y: { grid: { display: false } } }
-  }
-});
+  const byP=cur.eco.byPlatform,pbyP=pri?pri.eco.byPlatform:null;
+  const eL=byP.map(r=>r.platform);
+  bar('ch3a',eL,byP.map(r=>r.net_revenue),'Net Revenue (SGD)','#059669',
+      pbyP?eL.map(pl=>{const r=pbyP.find(x=>x.platform===pl);return r?r.net_revenue:0;}):null,'Prior Revenue');
 
-multiLineChart("p3MonthlyRev", p3Monthly, "Net Revenue (SGD)");
+  const tp=cur.eco.topProducts,ptp=pri?pri.eco.topProducts:null;
+  kx('ch3b');
+  const tpL=tp.map(r=>r.product_name);
+  const tpDs=[{label:'Net Revenue (SGD)',data:tp.map(r=>r.net_revenue),
+                backgroundColor:tp.map((_,i)=>C[i%C.length]),borderRadius:5}];
+  if(CM&&ptp)tpDs.push({label:'Prior Revenue',data:tpL.map(n=>{const r=ptp.find(x=>x.product_name===n);return r?r.net_revenue:0;}),
+                backgroundColor:tp.map((_,i)=>C[i%C.length]+'55'),borderRadius:5});
+  CH['ch3b']=new Chart(document.getElementById('ch3b'),{
+    type:'bar',data:{labels:tpL,datasets:tpDs},
+    options:{indexAxis:'y',responsive:true,
+      plugins:{legend:{display:CM&&!!ptp,position:'pottom',labels:{boxWidth:12,font:{size:11}}}},
+      scales:{x:{grid:{color:'#F1F5F9'}},y:{grid:{display:false}}}}
+  });
 
-buildTable("p3Table",
-  ["Platform","Net Revenue (SGD)","Orders","Avg Order Value"],
-  p3Platform.map(r => [
-    r.platform,
-    fmt(r.net_revenue, "SGD "),
-    fmt(r.orders),
-    fmt(r.net_revenue / r.orders, "SGD ", "", 2)
-  ])
-);
+  const tr=cur.eco.trend,ptr=pri?pri.eco.trend:null;
+  const{labels,n}=alignLabels(tr,ptr);
+  let ds=tr.datasets.map(d=>({...d,data:d.data.slice(0,n)}));
+  if(CM&&ptr)ds=ds.concat(ptr.datasets.map(d=>({label:d.label+' (Prior)',data:d.data.slice(0,n),p:true})));
+  multiline('ch3c',labels,ds);
+
+  tbl('tb3',['Platform','Net Revenue (SGD)','Orders','Avg Order Value'],
+    byP.map(r=>[r.platform,f(r.net_revenue,'SGD '),f(r.orders),f(r.net_revenue/r.orders,'SGD ','',2)]));
+}
+
+// ── Main render ───────────────────────────────────────────────────────────────
+function render(){
+  const pd=PERIODS[AP];
+  const cur=pd.current,pri=CM?pd.prior:null;
+  document.getElementById('dPill').textContent=cur.dateRange;
+  const pp=document.getElementById('priorPill');
+  if(CM&&pri){pp.textContent='vs '+pri.dateRange;pp.classList.add('on');}
+  else pp.classList.remove('on');
+  rP0(cur,pri);rP1(cur,pri);rP2(cur,pri);
+}
+
+function onP(){
+  AP=document.getElementById('psel').value;
+  const hasPrior=!!PERIODS[AP].prior;
+  const tog=document.getElementById('cmpTog');
+  if(!hasPrior){tog.checked=false;CM=false;}
+  tog.disabled=!hasPrior;
+  render();
+}
+function onC(){CM=document.getElementById('cmpTog').checked;render();}
+function showPage(n){
+  document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===n));
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+}
+
+onP();
 </script>
 </body>
 </html>
